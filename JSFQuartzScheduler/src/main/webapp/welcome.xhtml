@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>
+	<h:outputStylesheet library="css" name="table-style.css" />
+</h:head>
+<h:body>
+
+	<h1>All Quartz Jobs</h1>
+	<h:form>
+		<h:dataTable id="jobTable" value="#{scheduler.quartzJobList}" var="quartz"
+			styleClass="quartz-table" headerClass="quartz-table-header"
+			rowClasses="quartz-table-odd-row,quartz-table-even-row">
+
+			<h:column>
+				<!-- column header -->
+				<f:facet name="header">Job Name</f:facet>
+				<!-- row record -->
+    				#{quartz.jobName}
+    			</h:column>
+
+			<h:column>
+				<f:facet name="header">Job Group</f:facet>
+    				#{quartz.jobGroup}
+    			</h:column>
+
+			<h:column>
+				<f:facet name="header">Next Fire Time</f:facet>
+				<h:outputText id="nextFireTime" value="#{quartz.nextFireTime}">
+					<f:convertDateTime pattern="dd.MM.yyyy h:mm:ss a" />
+				</h:outputText>
+			</h:column>
+
+			<h:column>
+				<f:facet name="header">Start Action</f:facet>
+				<h:commandButton value="Fire Now">
+					<f:ajax event="click" listener="#{scheduler.fireNow(quartz.jobName, quartz.jobGroup)}" render="nextFireTime"/>
+				</h:commandButton>
+			</h:column>
+			
+			<h:column>
+				<f:facet name="header">Pause Action</f:facet>
+				<h:commandButton id="pause" type="button" value="Pause Now" disabled="#{scheduler.isTriggerPaused(quartz.jobName, quartz.jobGroup)}" >
+					<f:ajax event="click" listener="#{scheduler.pauseNow(quartz.jobName, quartz.jobGroup)}" render="resume pause"/>
+				</h:commandButton>
+			</h:column>
+			
+			<h:column>
+				<f:facet name="header">Resume Action</f:facet>
+				<h:commandButton id="resume" value="Resume Now" disabled="#{!scheduler.isTriggerPaused(quartz.jobName, quartz.jobGroup)}" >
+				<f:ajax event="click" listener="#{scheduler.resumeNow(quartz.jobName, quartz.jobGroup)}" render="pause resume nextFireTime"/>
+				</h:commandButton>
+					
+			</h:column>
+
+		</h:dataTable>
+		
+		<br/>
+		<br/>
+		<h:column>
+				<h:commandButton id="startScheduler" value="Start Scheduler" disabled="#{!scheduler.isInStandbyMode()}" >
+				<f:ajax event="click" listener="#{scheduler.startScheduler}" render="shutdownScheduler startScheduler jobTable"/>
+				</h:commandButton>
+		</h:column>
+		<br/>
+		<br/>
+		<br/>
+		<h:column>
+				<h:commandButton id="shutdownScheduler" value="Shutdown Scheduler" disabled="#{scheduler.isInStandbyMode()}" >
+				<f:ajax event="click" listener="#{scheduler.standByScheduler}" render="startScheduler shutdownScheduler j_idt8:jobTable"/>
+				</h:commandButton>
+		</h:column>
+	</h:form>
+</h:body>
+</html>
